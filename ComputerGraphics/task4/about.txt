@@ -1,0 +1,4 @@
+마지막 과제는 텍스처 매핑 입니다.
+강의 내용에 따라 diffuse color와 bump mapping을 구현하여 제출합니다. 
+1. 마지막 과제이고, 최종 성적 처리를 위해 마감 시간을 잘 지켜주시기 바랍니다. 
+2. 제출 시 반드시 소스코드를 함께 fragment shader, vertex shader를 포함하셔야 합니다. 

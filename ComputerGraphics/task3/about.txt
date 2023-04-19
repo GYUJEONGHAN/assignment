@@ -1,0 +1,29 @@
+세번째 과제는 Viewing과 lighting을 적용하는 것입니다.
+1 Viewing
+   a. 먼저 mouse 입력을 받기 위해 cursor position callback 함수와 scroll callback 함수를 만들고, window에 연결합니다.
+   b. cursor position callback 함수에서는 왼쪽 버튼이 눌렸을 때 마지막으로 기억하고 있는 cursor 위치와 현재 위치를 윈도우 크기로 나누고, 적당한 값을 곱하여 카메라 방향을 저장하고 있는 전역변수(theta, phi)의 값을 조정하고, (버튼의 상태와 상관 없이) 마지막으로 기억하고 있는 cursor 위치를 updat합니다.
+   c. scroll callback에서는 역시 전역변수로 저장하고 있는 field of view (화각) 값을 조정합니다.
+   d. rendering 과정에서 먼저, 원점을 중심으로 z축으로 5만큼 떨어져 있는 카메라의 초기 위치를 전역변수에 저장하고 있는 카메라 방향 만큼 돌려 카메라의 위치를 계산합니다.
+   e. glm::lookat 함수를 이용하여 계산된 카메라 위치, 보고 싶은 물체의 위치(원점), view up vector(y축)에 해당하는 viewing transform을 계산합니다.
+   f. glm::perspective 를 이용하여 전역변수로 저장된 화각과, 윈도우(또는 framebuffer)의 크기로 부터 계산한 종횡비(aspect ratio), 적절한 far, near 값에 해당되는 projection matrix를 계산합니다.
+   g. model transform은 단위 행렬(identity matrix, glm::mat4(1))로 합니다.
+   h. 계산한 3개의 행렬을 shader의 uniform으로 각각 전달합니다.
+   i. Vertex shader에서는 uniform으로 받은 3개의 행렬을 이용하여 vertex attribute로 받은 vertex 위치(model coordinate)를 world coordinate->camera coordinate->normalized coordinate로 변환하고, 그 결과를 gl_Position에 저장합니다.
+2. Lighting
+  * Lighting 과정은 camera의 위치, light의 위치가 모두 world coordinate에서 알 수 있기 때문에 world coordinate에서 진행합니다.
+  a. 뒷면에 앞면 위에 그려지지 않다록 depth test를 켜고, 매 프레임마다 depth buffer를 지워주도록 합니다.
+  b. 초기화 과정에서 vertex buffer 와 동일한 normal buffer를 만들고, J3A 파일을 읽을 때 얻은 normals[0]의 data를 저장합니다.
+  c. vertex attribute 1번에 normal buffer를 연결합니다.
+  d. rendering 과정에서는 light의 위치, camera의 위치를 uniform으로 shader에 전달합니다.
+  e. 이외에 필요한 shineness(float), color(vec4), ambient light(vec3) 등을 uniform으로 shader에 전달합니다.
+  f. vertex shader에서는 먼저 vertex의 world coordinate를 계산하고, out하여 fragment shader로 전달합니다.
+  g. 역시 vertex shader에서 normal vector의 world coordinate 상에서의 방향(!!)을 out하여 fragment shader로 전달합니다.
+  h. fragment shader에서는 vertex shader로 부터 얻은 world position과, camera position을 이용하여 V vector를 계산합니다.
+  i. 역시 world position과 light position을 이용하여 L vector를 계산합니다.
+  j. vertex shader로 부터 얻은 normal vector를 이용하여 N vector를 계산합니다.
+  k. L, N vector를 이용하여 R vector를 계산합니다.
+  l. R, L, N, V vector와 ambient light color, shineness, 물체의 color를 이용하여 phong shading 결과를 계산합니다.
+
+주의: 반드시 C/Cpp 파일, shader.vert, shader.frag를 모두 제출하셔야 합니다.
+주의: Viewing에서 phi 값이 -pi/2+0.01 < phi < pi/2-0.01 사이에 있도록 하시는 것이 좋습니다. 예를 들면 phi 값 계산 후에, if( phi<-PI/2+0.01 ) phi = -PI/2+0.01; 과 같이 범위 안으로 들어가도록 강제하는 부분이 있으면 이상하게 돌아가는 경우가 안 생깁니다. (theta는 상관 없음)
+주의: FoV 값도 0< FoV < PI 가 되어야 합니다. 동일한 방법으로 범위를 조정하십시오.
